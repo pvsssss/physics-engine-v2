@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import Tuple
 import math
 
+EPSILON = 1e-8
+
 
 class Vec2:
     __slots__ = ("x", "y")
@@ -57,11 +59,8 @@ class Vec2:
         return self.x * self.x + self.y * self.y
 
     def normalized(self) -> Vec2:
-        """
-        Returns a unit-length vector in the same direction.
-        """
         mag = self.length()
-        if mag == 0.0:
+        if mag < EPSILON:  # Use threshold instead of exact zero
             return Vec2(0.0, 0.0)
         return self / mag
 
@@ -94,6 +93,30 @@ class Vec2:
         scale = self.dot(axis) / axis_len_sq
         return axis * scale
 
+    def add_ip(self, other: Vec2) -> None:
+        self.x += other.x
+        self.y += other.y
+
+    def sub_ip(self, other: Vec2) -> None:
+        self.x -= other.x
+        self.y -= other.y
+
+    def mul_ip(self, scalar: float) -> None:
+        self.x *= scalar
+        self.y *= scalar
+
+    def set(self, x: float, y: float) -> None:
+        self.x = float(x)
+        self.y = float(y)
+
+    def clamp_length(self, max_len: float) -> None:
+        mag_sq = self.length_squared()
+        if mag_sq > max_len * max_len:
+            mag = math.sqrt(mag_sq)
+            scale = max_len / mag
+            self.x *= scale
+            self.y *= scale
+
     # static helper functions
     @staticmethod
     def distance(a: Vec2, b: Vec2) -> float:
@@ -105,3 +128,12 @@ class Vec2:
         Linear interpolation between vectors.
         """
         return a + (b - a) * t
+
+    @staticmethod
+    def distance_squared(a: Vec2, b: Vec2) -> float:
+        """
+        Calculates distance between two vectors
+        """
+        dx = a.x - b.x
+        dy = a.y - b.y
+        return dx * dx + dy * dy

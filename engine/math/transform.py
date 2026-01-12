@@ -6,7 +6,7 @@ from engine.math.mat import Mat2
 
 
 class Transform:
-    __slots__ = ("position", "angle", "_rotation", "_rotation_T")
+    __slots__ = ("position", "_angle", "_rotation", "_rotation_T")
 
     position: Vec2
     angle: float
@@ -65,3 +65,23 @@ class Transform:
         Transforms multiple local-space points to world space.
         """
         return [self.local_to_world(p) for p in points]
+
+    @property
+    def angle(self) -> float:
+        return self._angle
+
+    @angle.setter
+    def angle(self, value: float) -> None:
+        self._angle = float(value)
+        self._rotation = Mat2.rotation(self._angle)
+        self._rotation_T = self._rotation.transpose()
+
+    def translate(self, delta: Vec2) -> None:
+        self.position.add_ip(delta)
+
+    def set_angle(self, angle: float) -> None:
+        self.angle = float(angle)
+        self.update_rotation()
+
+    def copy(self) -> Transform:
+        return Transform(self.position.copy(), self.angle)

@@ -63,3 +63,21 @@ class AABB:
             Vec2(min_x, min_y),
             Vec2(max_x, max_y),
         )
+
+    @property
+    def width(self) -> float:
+        return self.max.x - self.min.x
+
+    @property
+    def height(self) -> float:
+        return self.max.y - self.min.y
+
+    @property
+    def center(self) -> Vec2:
+        return Vec2(
+            (self.min.x + self.max.x) * 0.5,
+            (self.min.y + self.max.y) * 0.5,
+        )
+
+    def contains_point(self, p: Vec2) -> bool:
+        return self.min.x <= p.x <= self.max.x and self.min.y <= p.y <= self.max.y

@@ -66,6 +66,9 @@ class Mat2:
         """
         return Mat2(self.m00, self.m10, self.m01, self.m11)
 
+    def copy(self) -> Mat2:
+        return Mat2(self.m00, self.m01, self.m10, self.m11)
+
     # basic helpful methods for matrices
     @staticmethod
     def identity() -> Mat2:
