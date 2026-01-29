@@ -25,6 +25,7 @@ class Particle:
     alive: bool = True
 
     force: Vec2 = field(default_factory=lambda: Vec2(0.0, 0.0))
+    acceleration: Vec2 = field(default_factory=lambda: Vec2(0.0, 0.0))
     inv_mass: float = field(init=False)
     sleeping: bool = field(default=False, init=False)
     sleep_timer: float = field(default=0.0, init=False)

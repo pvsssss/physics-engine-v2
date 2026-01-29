@@ -26,11 +26,11 @@ def main() -> None:
     # Main loop
     running = True
     clock = pygame.time.Clock()
-    FIXED_DT = 1.0 / 120.0  # physics timestep
+    FIXED_DT = 1.0 / 144.0  # physics timestep
     accumulator = 0.0
 
     while running:
-        frame_dt = clock.tick(60) / 1000.0
+        frame_dt = clock.tick(144) / 1000.0
         accumulator += frame_dt
 
         # Events

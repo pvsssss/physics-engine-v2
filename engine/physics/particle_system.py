@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import List
 
 from engine.physics.particle import Particle
@@ -42,7 +43,7 @@ class ParticleSystem:
         # State
         self.paused: bool = False
         self.broadphase = SpatialHashGrid(cell_size=2.0 * 10)
-        self.solver_iterations = 16
+        self.solver_iterations = 20
         self.containers: list[Container] = []
         self.constraints: list[Constraint] = []
 
@@ -91,7 +92,7 @@ class ParticleSystem:
             for force in self.local_forces:
                 force.apply(p, dt)
 
-        # 2. Integrate particles FIRST (before constraints)
+        # 2. Integrate particles
         for p in self.particles:
             integrate_particle(p, dt)
 
@@ -115,19 +116,17 @@ class ParticleSystem:
             for container in self.containers:
                 contacts.extend(container.generate_contacts(p))
 
-        # 5. Solve collisions AND constraints iteratively
+        # 5. IMPROVED: Solve collisions AND positional correction iteratively
+        # This distributes corrections across iterations, reducing wave artifacts
         for _ in range(self.solver_iterations):
-            # Solve collisions
+            # Solve collisions with positional correction in same iteration
             for contact in contacts:
                 resolve_contact(contact)
+                positional_correction(contact)
 
             # Solve constraints (with dt for velocity correction)
             for constraint in self.constraints:
                 constraint.solve(dt)
 
-        # 6. Apply positional correction ONCE at the end
-        for contact in contacts:
-            positional_correction(contact)
-
-        # 7. Cleanup
+        # 6. Cleanup
         self.remove_dead()

@@ -36,8 +36,9 @@ def build(system: ParticleSystem) -> None:
             velocity=Vec2(random.uniform(-100.0, 100.0), random.uniform(-100.0, 100.0)),
             radius=10.0,
             mass=1.0,
-            restitution=0.6,
-            friction=0.3,
-            sleep_threshold=4.5,
+            restitution=0.7,
+            friction=0.1,
+            damping=0.0,
+            sleep_threshold=10,
         )
         system.add_particle(p)

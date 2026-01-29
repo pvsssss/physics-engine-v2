@@ -1,8 +1,8 @@
 from __future__ import annotations
+
 import math
 
 from engine.physics.contact import Contact
-
 
 # Velocity threshold for treating collision as resting (non-bouncy)
 RESTING_VELOCITY_THRESHOLD = 1.0
@@ -12,8 +12,8 @@ EPSILON = 1e-8
 
 # Thresholds for waking sleeping particles
 # Only wake if collision is significant enough to matter
-WAKE_THRESHOLD_VELOCITY = 0.1  # Wake if relative velocity > this
-WAKE_THRESHOLD_PENETRATION = 0.1  # Wake if penetration > this
+WAKE_THRESHOLD_VELOCITY = 2.0  # INCREASED: Less sensitive to micro-collisions
+WAKE_THRESHOLD_PENETRATION = 0.5  # INCREASED: Tolerate more overlap before waking
 
 
 def resolve_contact(contact: Contact) -> None:
@@ -26,7 +26,6 @@ def resolve_contact(contact: Contact) -> None:
     2. Apply normal impulse (handles bounce/collision response)
     3. Apply friction impulse (handles sliding/sticking)
     """
-
     a = contact.a
     b = contact.b
 
@@ -42,6 +41,7 @@ def resolve_contact(contact: Contact) -> None:
 
     # relative velocity at contact
     rv = b.velocity - a.velocity
+
     # relative velocity at contact along collision normal
     vel_along_normal = rv.dot(contact.normal)
 
@@ -59,7 +59,6 @@ def resolve_contact(contact: Contact) -> None:
         if hasattr(a, "sleeping") and a.sleeping and inv_mass_a > 0.0:
             a.sleeping = False
             a.sleep_timer = 0.0
-
         if hasattr(b, "sleeping") and b.sleeping and inv_mass_b > 0.0:
             b.sleeping = False
             b.sleep_timer = 0.0
@@ -76,11 +75,6 @@ def resolve_contact(contact: Contact) -> None:
     j = -(1.0 + restitution) * vel_along_normal
     j /= inv_mass_a + inv_mass_b
 
-    # debug statement
-    # if inv_mass_a > 0.0 and inv_mass_b > 0.0:  # Both dynamic
-    #     print(
-    #         f"P-P Collision: vel_along_normal={vel_along_normal:.1f}, j={j:.1f}, restitution={restitution:.2f}"
-    #     )
     impulse = contact.normal * j
 
     if inv_mass_a > 0.0:
@@ -91,10 +85,6 @@ def resolve_contact(contact: Contact) -> None:
         b.velocity.x += impulse.x * inv_mass_b
         b.velocity.y += impulse.y * inv_mass_b
 
-    # debug statement
-    # if hasattr(a, "position") and abs(a.position.y - 700) < 20:  # Near bottom wall
-    #     print(f"After impulse: a.vel.y={a.velocity.y:.1f}, impulse.y={impulse.y:.1f}")
-
     # Recompute relative velocity after normal impulse
     # (friction acts on the velocities AFTER collision response)
     rv = b.velocity - a.velocity
@@ -102,7 +92,6 @@ def resolve_contact(contact: Contact) -> None:
     # Tangent direction (perpendicular to normal, in plane of sliding)
     # tangent = rv - (rv · n) * n
     tangent = rv - contact.normal * rv.dot(contact.normal)
-
     tangent_len_sq = tangent.length_squared()
 
     # if no tangential velocity then no friction needed
@@ -120,6 +109,7 @@ def resolve_contact(contact: Contact) -> None:
 
     if abs(vel_along_normal) < 2.0:  # Very slow collision
         return
+
     # applying coulomb friction
     # friction cannot exceed μ * normal_force
     max_friction = j * mu
@@ -138,6 +128,13 @@ def resolve_contact(contact: Contact) -> None:
 
 
 def positional_correction(contact: Contact) -> None:
+    """
+    Applies positional correction to resolve penetration.
+
+    IMPROVED: Reduced correction percentage and increased slop tolerance
+    to minimize wave artifacts in stacks. Disabled velocity adjustment
+    to prevent energy injection.
+    """
     a = contact.a
     b = contact.b
 
@@ -147,9 +144,13 @@ def positional_correction(contact: Contact) -> None:
     if inv_mass_a + inv_mass_b == 0.0:
         return
 
-    percent = 0.3
-    slop = 0.05
-    MAX_CORRECTION_PER_ITERATION = 1.0
+    # IMPROVED: Reduced from 0.3 to 0.2 for gentler correction
+    percent = 0.2
+
+    # IMPROVED: Increased from 0.05 to 0.15 to tolerate more penetration
+    slop = 0.15
+
+    MAX_CORRECTION_PER_ITERATION = 0.5
 
     correction_mag = max(contact.penetration - slop, 0.0)
     correction_mag /= inv_mass_a + inv_mass_b
@@ -158,32 +159,17 @@ def positional_correction(contact: Contact) -> None:
 
     correction = contact.normal * correction_mag
 
-    # NEW: Velocity adjustment factor
-    # This removes velocity in the correction direction to prevent oscillation
-    velocity_adjustment_factor = 0.2  # 20% of correction affects velocity
-
+    # Apply position correction
     if inv_mass_a > 0.0:
         a.position.x -= correction.x * inv_mass_a
         a.position.y -= correction.y * inv_mass_a
-
-        # NEW: Adjust velocity to match position change
-        # This prevents the particle from "bouncing back" next frame
-        vel_correction = contact.normal * (
-            correction_mag * inv_mass_a * velocity_adjustment_factor
-        )
-        a.velocity.x -= vel_correction.x
-        a.velocity.y -= vel_correction.y
 
     if inv_mass_b > 0.0:
         b.position.x += correction.x * inv_mass_b
         b.position.y += correction.y * inv_mass_b
 
-        # NEW: Adjust velocity
-        vel_correction = contact.normal * (
-            correction_mag * inv_mass_b * velocity_adjustment_factor
-        )
-        b.velocity.x += vel_correction.x
-        b.velocity.y += vel_correction.y
+    # IMPROVED: Velocity adjustment disabled (was 0.05)
+    # This prevents energy injection that causes jitter in stacks
 
 
 def solve_contact(contact: Contact) -> None:
