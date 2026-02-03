@@ -7,10 +7,9 @@ from engine.math.vec import Vec2
 @dataclass
 class Particle:
     """
-    Live particle instance.
-
-    Represents a point mass with linear motion only.
-    No rotation, no angular velocity.
+    Particle object dataclass
+    Particles do not have any sort of
+    angular velocity/acceleration/force
     """
 
     position: Vec2
@@ -49,4 +48,6 @@ class Particle:
 
     @property
     def radius_vec(self) -> Vec2:
+        # making this a property of the object so that it can be
+        # accessed later
         return Vec2(self.radius, self.radius)

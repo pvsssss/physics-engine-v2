@@ -14,12 +14,8 @@ from engine.physics.constraints.base import Constraint
 
 class ParticleSystem:
     """
-    Owns and updates all live particles.
-
-    Responsibilities:
-    - apply forces
-    - advance simulation via integrator
-    - remove dead particles
+    Updates particle objects using multiple different helper functions
+    Use step() to step through one physics frame for all particles
     """
 
     __slots__ = (
@@ -44,6 +40,7 @@ class ParticleSystem:
         self.paused: bool = False
         self.broadphase = SpatialHashGrid(cell_size=2.0 * 10)
         self.solver_iterations = 20
+
         self.containers: list[Container] = []
         self.constraints: list[Constraint] = []
 
@@ -83,27 +80,27 @@ class ParticleSystem:
         if self.paused:
             return
 
-        # 1. Apply forces
+        # apply forces on the particles
         for p in self.particles:
-            if not p.alive or p.sleeping:
+            if not p.alive or p.sleeping:  # early out
                 continue
             for force in self.global_forces:
                 force.apply(p, dt)
             for force in self.local_forces:
                 force.apply(p, dt)
 
-        # 2. Integrate particles
+        # integrating the particles using verlet integration
         for p in self.particles:
             integrate_particle(p, dt)
 
-        # 3. Broadphase (spatial hash)
+        # broadphase collision detection
         self.broadphase.clear()
         for p in self.particles:
             if p.alive:
                 self.broadphase.insert(p)
         candidate_pairs = self.broadphase.compute_pairs()
 
-        # 4. Narrowphase (generate contacts)
+        # narrowphase collision detection
         contacts = []
         for a, b in candidate_pairs:
             contact = circle_circle(a, b)
@@ -116,17 +113,20 @@ class ParticleSystem:
             for container in self.containers:
                 contacts.extend(container.generate_contacts(p))
 
-        # 5. IMPROVED: Solve collisions AND positional correction iteratively
-        # This distributes corrections across iterations, reducing wave artifacts
+        # solving collisions and constraints iteratively to account for
+        # multiple overlaps
         for _ in range(self.solver_iterations):
-            # Solve collisions with positional correction in same iteration
+            # solving collision
             for contact in contacts:
                 resolve_contact(contact)
-                positional_correction(contact)
 
-            # Solve constraints (with dt for velocity correction)
+            # solving constraints
             for constraint in self.constraints:
                 constraint.solve(dt)
 
-        # 6. Cleanup
+        # applying positional correction to decouple overlapping objects
+        for contact in contacts:
+            positional_correction(contact)
+
+        # removing dead particles
         self.remove_dead()

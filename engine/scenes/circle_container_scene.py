@@ -10,12 +10,6 @@ from engine.physics.particle_system import ParticleSystem
 
 
 def build(system: ParticleSystem) -> None:
-    """
-    Test scene:
-    - gravity
-    - rectangular container (1000 x 700)
-    - 10 particles
-    """
 
     system.clear()
     system.clear_forces()
@@ -38,7 +32,21 @@ def build(system: ParticleSystem) -> None:
             mass=1.0,
             restitution=0.7,
             friction=0.1,
-            damping=0.0,
-            sleep_threshold=10,
+            damping=0.05,
+            sleep_threshold=1.0,
         )
         system.add_particle(p)
+    particle1 = Particle(
+        position=Vec2(
+            random.uniform(250.0, 750.0),
+            350.0,
+        ),
+        velocity=Vec2(random.uniform(-100.0, 100.0), random.uniform(-100.0, 100.0)),
+        radius=10.0,
+        mass=1.0,
+        restitution=0.7,
+        friction=0.1,
+        damping=0.05,
+        sleep_threshold=1.0,
+    )
+    system.add_particle(particle1)

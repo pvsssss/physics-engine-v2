@@ -11,6 +11,7 @@ class StaticBody:
 
     __slots__ = ()
 
+    # default values
     inv_mass: float = 0.0
     velocity: Vec2 = Vec2(0.0, 0.0)
     restitution: float = 0.8

@@ -6,7 +6,6 @@ from engine.core.simulation_controller import SimulationController
 from engine.scenes import rope_scene
 from engine.scenes import circle_container_scene
 from engine.scenes import projectile_scene
-from engine.scenes import projectile_config
 from engine.scenes import buoyancy_scene
 from engine.scenes import buoyancy_config
 
@@ -18,25 +17,14 @@ def main() -> None:
     controller = SimulationController()
     psystem = ParticleSystem()
 
-    # enter your scene here
-    scene = projectile_scene
+    # Use buoyancy scene
+    scene = buoyancy_scene
     scene.build(psystem)
 
-    if scene == projectile_scene:
-        renderer.draw_trajectories = projectile_config.DRAW_TRAJECTORY
-        renderer.draw_coordinates = True
-        renderer.draw_scale = True
-        renderer.draw_containers = False
-        # Enable bottom-left origin coordinate system for projectile scene
-        renderer.use_bottom_left_origin = True
-
-    if scene == buoyancy_scene:
-        renderer.draw_water = True
-        renderer.draw_scale = True
-        renderer.use_bottom_left_origin = True
-        SCREEN_HEIGHT = 700.0
-        water_bottom_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_BOTTOM
-        water_top_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_TOP
+    # Enable buoyancy-specific rendering features
+    renderer.draw_water = True
+    renderer.draw_scale = True
+    renderer.use_bottom_left_origin = True
 
     # Main loop
     running = True
@@ -44,11 +32,16 @@ def main() -> None:
     FIXED_DT = 1.0 / 144.0  # physics timestep
     accumulator = 0.0
 
+    # Convert water bounds to engine coordinates for rendering
+    SCREEN_HEIGHT = 700.0
+    water_top_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_TOP
+    water_bottom_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_BOTTOM
+
     while running:
         frame_dt = clock.tick(144) / 1000.0
         accumulator += frame_dt
 
-        # keyboard event controller
+        # Events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -63,70 +56,65 @@ def main() -> None:
                     controller.request_reset()
                 elif event.key == pygame.K_c:  # Toggle constraints
                     renderer.draw_constraints = not renderer.draw_constraints
-                elif event.key == pygame.K_t:  # Toggle trajectory
-                    renderer.draw_trajectories = not renderer.draw_trajectories
-                elif event.key == pygame.K_o:  # Toggle coordinates
-                    renderer.draw_coordinates = not renderer.draw_coordinates
+                elif event.key == pygame.K_w:  # Toggle water visualization
+                    renderer.draw_water = not renderer.draw_water
                 elif event.key == pygame.K_l:  # Toggle scale
                     renderer.draw_scale = not renderer.draw_scale
 
         if controller.should_reset():
             scene.build(psystem)
-            renderer.clear_trajectories()  # Clear old trajectory
             accumulator = 0.0
 
         # Step physics
         while accumulator >= FIXED_DT:
             if controller.should_step():
                 psystem.step(FIXED_DT)
-
-                # Track trajectory for all particles
-                for p in psystem.particles:
-                    if p.alive:
-                        renderer.track_particle_trajectory(
-                            p,
-                            max_points=projectile_config.MAX_TRAIL_POINTS,
-                            trajectory_color=projectile_config.TRAJECTORY_COLOR,
-                        )
-
             accumulator -= FIXED_DT
 
         # Render
         renderer.begin_frame()
 
-        # draw containers
+        # Draw scale markers (background layer)
+        renderer.draw_scale_markers(
+            tick_interval=buoyancy_config.SCALE_TICK_INTERVAL,
+            scale_color=buoyancy_config.SCALE_COLOR,
+        )
+
+        # Draw water region
+        renderer.draw_water_region(
+            water_top=water_top_engine,
+            water_bottom=water_bottom_engine,
+            water_color=buoyancy_config.WATER_COLOR,
+            surface_color=buoyancy_config.WATER_SURFACE_COLOR,
+        )
+
+        # Draw containers
         for container in psystem.containers:
             renderer.draw_container(container)
 
-        # drawing scale marker
-        renderer.draw_scale_markers(
-            tick_interval=projectile_config.SCALE_TICK_INTERVAL,
-            scale_color=projectile_config.SCALE_COLOR,
-        )
-
-        # Draw trajectory trails
-        for p in psystem.particles:
-            if p.alive:
-                renderer.draw_trajectory_trail(
-                    p, trajectory_color=projectile_config.TRAJECTORY_COLOR
-                )
-
-        # Draw particles
+        # Draw particles (they have custom colors)
         for p in psystem.particles:
             if p.alive:
                 renderer.draw_particle(p)
 
-        # Draw constraints
+        # Draw constraints (if any)
         if renderer.draw_constraints:
             for constraint in psystem.constraints:
                 particles = constraint.get_particles()
                 if len(particles) == 2:
                     renderer.draw_constraint(particles[0], particles[1])
 
-        # Draw particle coordinates (foreground layer)
-        for p in psystem.particles:
-            if p.alive:
-                renderer.draw_particle_coordinates(p)
+        # Draw density legend
+        if buoyancy_config.SHOW_LEGEND:
+            renderer.draw_density_legend(
+                x=SCREEN_WIDTH - 220,
+                y=20,
+                low_color=buoyancy_config.COLOR_LOW_DENSITY,
+                mid_color=buoyancy_config.COLOR_MID_DENSITY,
+                high_color=buoyancy_config.COLOR_HIGH_DENSITY,
+                min_density=buoyancy_config.PARTICLE_DENSITY_MIN,
+                max_density=buoyancy_config.PARTICLE_DENSITY_MAX,
+            )
 
         renderer.end_frame(clock.get_fps())
 

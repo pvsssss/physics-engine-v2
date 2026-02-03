@@ -5,7 +5,7 @@ import math
 from engine.physics.contact import Contact
 
 # Velocity threshold for treating collision as resting (non-bouncy)
-RESTING_VELOCITY_THRESHOLD = 1.0
+RESTING_VELOCITY_THRESHOLD = 2.0
 
 # Small epsilon for floating-point comparisons
 EPSILON = 1e-8
@@ -13,7 +13,7 @@ EPSILON = 1e-8
 # Thresholds for waking sleeping particles
 # Only wake if collision is significant enough to matter
 WAKE_THRESHOLD_VELOCITY = 2.0  # INCREASED: Less sensitive to micro-collisions
-WAKE_THRESHOLD_PENETRATION = 0.5  # INCREASED: Tolerate more overlap before waking
+WAKE_THRESHOLD_PENETRATION = 0.3  # INCREASED: Tolerate more overlap before waking
 
 
 def resolve_contact(contact: Contact) -> None:
@@ -148,9 +148,9 @@ def positional_correction(contact: Contact) -> None:
     percent = 0.2
 
     # IMPROVED: Increased from 0.05 to 0.15 to tolerate more penetration
-    slop = 0.15
+    slop = 0.05
 
-    MAX_CORRECTION_PER_ITERATION = 0.5
+    MAX_CORRECTION_PER_ITERATION = 2
 
     correction_mag = max(contact.penetration - slop, 0.0)
     correction_mag /= inv_mass_a + inv_mass_b

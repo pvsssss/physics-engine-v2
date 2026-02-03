@@ -23,6 +23,7 @@ def circle_circle(a: Particle, b: Particle) -> Contact | None:
     4. Handle edge case of coincident centers
     """
 
+    # defining values that would be needed later
     delta = b.position - a.position
     dist_sq = delta.length_squared()
 
@@ -37,10 +38,10 @@ def circle_circle(a: Particle, b: Particle) -> Contact | None:
     if a.inv_mass == 0.0 and b.inv_mass == 0.0:
         return None
 
-    # Handle coincident centers (rare but critical edge case)
+    # Handle coincident centers edge case
     if dist_sq < EPSILON * EPSILON:
         # Centers are essentially at the same position
-        # Use arbitrary normal
+        # Use arbitrary normal for deterministic behaviour
         normal = Vec2(1.0, 0.0)
         penetration = radius_sum
         contact_point = a.position.copy()

@@ -24,16 +24,19 @@ def build(system: ParticleSystem) -> None:
     system.add_global_force(gravity)
 
     # Create rope chain
-    rope_length = 8
+    rope_length = 10
     particles = []
 
     for i in range(rope_length):
         # First particle is static (pinned to ceiling)
-        mass = float("inf") if i == 0 else 1.0
-
+        mass = float("inf") if i == 0 else 10.0
+        velocity_scale = i / rope_length
         p = Particle(
             position=Vec2(500.0, 100.0 + i * 30.0),
-            velocity=Vec2(0.0, 0.0),
+            velocity=Vec2(
+                500.0 * velocity_scale,  # Horizontal velocity (swing)
+                100.0,
+            ),
             radius=8.0,
             mass=mass,
             restitution=0.2,
@@ -47,7 +50,7 @@ def build(system: ParticleSystem) -> None:
         constraint = DistanceConstraint(
             particles[i],
             particles[i + 1],
-            distance=30.0,  # Fixed distance
-            stiffness=1.0,  # Rigid rope (use 0.5 for stretchy)
+            distance=25.0,
+            stiffness=0.5,
         )
         system.add_constraint(constraint)
