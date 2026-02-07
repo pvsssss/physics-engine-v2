@@ -82,16 +82,16 @@ def main() -> None:
                             renderer.draw_constraints = not renderer.draw_constraints
                     elif event.key == pygame.K_t:
                         if renderer:
-                            renderer.draw_trajectories = not renderer.draw_trajectories
+                            sim_ui.toggle("trajectory")
                     elif event.key == pygame.K_o:
                         if renderer:
-                            renderer.draw_coordinates = not renderer.draw_coordinates
+                            sim_ui.toggle("coordinates")
                     elif event.key == pygame.K_l:
                         if renderer:
-                            renderer.draw_scale = not renderer.draw_scale
+                            sim_ui.toggle("scale")
                     elif event.key == pygame.K_w:
                         if renderer:
-                            renderer.draw_water = not renderer.draw_water
+                            sim_ui.toggle("water")
 
             # Handle UI events
             if menu.state != MenuState.SIMULATION:
@@ -146,7 +146,21 @@ def main() -> None:
                 on_pause=lambda: controller.toggle_pause() if controller else None,
                 on_step=lambda: controller.request_step() if controller else None,
             )
+        if menu.state == MenuState.SIMULATION and renderer and sim_ui:
+            # Constraints toggle (Rope/Circle scenes)
+            renderer.draw_constraints = sim_ui.get_toggle("constraints")
 
+            # Trajectory toggle (Projectile)
+            renderer.draw_trajectories = sim_ui.get_toggle("trajectory")
+
+            # Coordinates toggle (Projectile)
+            renderer.draw_coordinates = sim_ui.get_toggle("coordinates")
+
+            # Water toggle (Buoyancy)
+            renderer.draw_water = sim_ui.get_toggle("water")
+
+            # Scale toggle (All scenes)
+            renderer.draw_scale = sim_ui.get_toggle("scale")
             accumulator = 0.0
 
         # Cleanup when leaving simulation

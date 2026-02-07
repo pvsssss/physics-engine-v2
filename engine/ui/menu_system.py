@@ -289,7 +289,6 @@ class SimulationUI:
         )
         self.buttons.append(step_btn)
 
-        # Scene-specific toggles
         y_offset = 280
 
         # Add scene-specific controls based on scene type

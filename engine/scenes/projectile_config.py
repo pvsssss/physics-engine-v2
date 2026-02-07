@@ -27,7 +27,7 @@ GRAVITY = Vec2(0.0, -980.0)
 # Wind force (constant horizontal force)
 # Positive x = rightward wind, Negative x = leftward wind
 # Set to Vec2(0.0, 0.0) for no wind
-WIND_FORCE = Vec2(100.0, 0.0)
+WIND_FORCE = Vec2(0.0, 0.0)
 
 # Particle visual radius (pixels)
 PARTICLE_RADIUS = 10.0
