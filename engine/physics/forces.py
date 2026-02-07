@@ -9,12 +9,8 @@ from engine.physics.particle import Particle
 
 class Force(ABC):
     """
-    Abstract base class for all forces.
-
-    A force:
-    - reads particle state
-    - writes to particle.force
-    - never integrates or moves particles directly
+    Abstract base class for force, not to be used in the actuall code/
+    each child class required to have an apply method.
     """
 
     @abstractmethod
@@ -24,7 +20,7 @@ class Force(ABC):
 
 class Gravity(Force):
     """
-    Uniform gravity applied to all particles.
+    Gravity force class.
     """
 
     __slots__ = ("g",)
@@ -70,17 +66,16 @@ class WindForce(Force):
         if particle.inv_mass == 0.0:
             return
 
-        # Apply constant force (not mass-dependent like gravity)
         particle.force.add_ip(self.force)
 
 
 class RegionalForce(Force):
     """
-    Abstract base class for forces that only apply within a specific region.
+    Abstract base class for forces that only apply within
+    a specific region.
 
-    Subclasses must implement:
-    - is_in_region(particle) -> bool: Check if particle is in the force region
-    - apply_regional_force(particle, dt): Apply the actual force
+    subclasses required to implement a is in region method
+    that returns a bool and a apply method that applies the force
     """
 
     @abstractmethod
@@ -101,11 +96,12 @@ class RegionalForce(Force):
 
 class BuoyancyForce(RegionalForce):
     """
-    Buoyant force for particles in a fluid region (water).
+    Buoyant force for particles in water.
 
-    Implements Archimedes' principle in 2D:
-    - F_buoyant = p_fluid * g * A_submerged
-    - Where A_submerged is the area of the particle underwater
+    Implements Archimedes' principle in 2D using the area of
+    the particles-
+    F_buoyant = p_fluid * g * A_submerged
+    Where A_submerged is the area of the particle underwater
 
     Handles partial submersion for smooth transitions.
     """

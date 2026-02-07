@@ -59,13 +59,16 @@ def density_to_color(density: float) -> tuple:
 def build(system: ParticleSystem) -> None:
     """
     Builds a buoyancy simulation scene with particles of varying densities.
+
+    Uses gentle force scaling to work with default solver settings.
     """
     system.clear()
     system.clear_forces()
     system.containers.clear()
 
-    # Set solver iterations for better collision resolution with heavy particles
-    system.solver_iterations = config.SOLVER_ITERATIONS
+    # Only override solver iterations if config specifies it
+    if config.SOLVER_ITERATIONS is not None:
+        system.solver_iterations = config.SOLVER_ITERATIONS
 
     # Create container (full screen bounds)
     container_top_left = bottom_left_to_top_left(
@@ -162,16 +165,3 @@ def build(system: ParticleSystem) -> None:
         particle.color = color
 
         system.add_particle(particle)
-    # floating_particle = Particle(
-    #     position=Vec2(100.0, 100.0),
-    #     velocity=Vec2(0.0, 0.0),
-    #     radius=10.0,
-    #     mass=3.1416,
-    #     restitution=config.PARTICLE_RESTITUTION,
-    #     friction=config.PARTICLE_FRICTION,
-    #     damping=config.PARTICLE_DAMPING,
-    #     sleep_threshold=config.SLEEP_THRESHOLD,
-    # )
-    # floating_particle.density = 100.0
-    # floating_particle.color = (150, 50, 200)
-    # system.add_particle(floating_particle)

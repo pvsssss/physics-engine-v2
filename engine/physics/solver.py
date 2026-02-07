@@ -10,6 +10,8 @@ RESTING_VELOCITY_THRESHOLD = 2.0
 # Small epsilon for floating-point comparisons
 EPSILON = 1e-8
 
+MAX_CORRECTION_PER_ITERATION = 2
+PERCENT = 0.2
 # Thresholds for waking sleeping particles
 # Only wake if collision is significant enough to matter
 WAKE_THRESHOLD_VELOCITY = 2.0  # INCREASED: Less sensitive to micro-collisions
@@ -145,12 +147,10 @@ def positional_correction(contact: Contact) -> None:
         return
 
     # IMPROVED: Reduced from 0.3 to 0.2 for gentler correction
-    percent = 0.2
+    percent = PERCENT
 
     # IMPROVED: Increased from 0.05 to 0.15 to tolerate more penetration
     slop = 0.05
-
-    MAX_CORRECTION_PER_ITERATION = 2
 
     correction_mag = max(contact.penetration - slop, 0.0)
     correction_mag /= inv_mass_a + inv_mass_b

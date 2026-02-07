@@ -9,7 +9,7 @@ from engine.physics.particle import Particle
 @dataclass
 class Contact:
     """
-    Describes a collision contact between two rigid bodies.
+    dataclass for a particle data-object
     """
 
     a: Particle  # particle referrences

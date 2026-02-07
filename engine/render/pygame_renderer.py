@@ -21,10 +21,11 @@ class PygameRenderer:
         self.camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, PIXELS_PER_UNIT)
 
         # Debug toggles
-        self.draw_velocities = True
+        self.draw_velocities = False
         self.draw_constraints = True
         self.draw_contacts = False
         self.draw_grid = True
+        self.draw_containers = True
 
         # Trajectory tracking
         self.trajectory_trails = {}  # particle_id -> list of positions
@@ -145,9 +146,9 @@ class PygameRenderer:
 
     def draw_container(self, container):
         """Draw container based on its type"""
-        if isinstance(container, RectangleContainer):
+        if isinstance(container, RectangleContainer) and self.draw_containers == True:
             self._draw_rectangle_container(container)
-        elif isinstance(container, CircleContainer):
+        elif isinstance(container, CircleContainer) and self.draw_containers == True:
             self._draw_circle_container(container)
 
     def _draw_rectangle_container(self, container):
@@ -156,14 +157,14 @@ class PygameRenderer:
         x2, y2 = self.camera.world_to_screen(container.max.x, container.max.y)
         width = x2 - x1
         height = y2 - y1
-        pygame.draw.rect(self.screen, CONSTRAINT_COLOR, (x1, y1, width, height), 2)
+        pygame.draw.rect(self.screen, CONTAINER_COLOR, (x1, y1, width, height), 2)
 
     def _draw_circle_container(self, container):
         """Draw circular container bounds"""
         cx, cy = self.camera.world_to_screen(container.center.x, container.center.y)
         radius = int(container.radius * self.camera.pixels_per_unit)
         # Draw 1-2 pixels larger to prevent visual clipping
-        pygame.gfxdraw.aacircle(self.screen, cx, cy, radius, CONSTRAINT_COLOR)
+        pygame.gfxdraw.aacircle(self.screen, cx, cy, radius, CONTAINER_COLOR)
 
     # ========================================
     # COORDINATE CONVERSION HELPERS

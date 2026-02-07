@@ -27,7 +27,7 @@ GRAVITY = Vec2(0.0, -980.0)
 # Wind force (constant horizontal force)
 # Positive x = rightward wind, Negative x = leftward wind
 # Set to Vec2(0.0, 0.0) for no wind
-WIND_FORCE = Vec2(0.0, 0.0)
+WIND_FORCE = Vec2(100.0, 0.0)
 
 # Particle visual radius (pixels)
 PARTICLE_RADIUS = 10.0
@@ -40,12 +40,12 @@ PARTICLE_MASS = 1.0
 RESTITUTION = 0.7
 
 # Friction coefficient (0.0 = no friction, 1.0 = high friction)
-FRICTION = 2
+FRICTION = 0.2
 # Air resistance damping (0.0 = no damping, 0.1 = high damping)
 DAMPING = 0.0
 
 # Should the particle bounce off container walls?
-ENABLE_BOUNCE = False
+ENABLE_BOUNCE = True
 
 # Draw trajectory trail behind particle?
 DRAW_TRAJECTORY = True
@@ -57,7 +57,7 @@ MAX_TRAIL_POINTS = 1000
 # These are in bottom-left origin coordinates
 CONTAINER_X = 0.0
 CONTAINER_Y = 0.0
-CONTAINER_WIDTH = 1000.0
+CONTAINER_WIDTH = 950.0
 CONTAINER_HEIGHT = 700.0
 
 # Distance between scale tick marks (in world units)

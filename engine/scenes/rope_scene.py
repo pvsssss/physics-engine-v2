@@ -16,7 +16,7 @@ def build(system: ParticleSystem) -> None:
     system.containers.clear()
 
     # Container
-    container = RectangleContainer(0.0, 0.0, 1000.0, 700.0)
+    container = RectangleContainer(0.0, 0.0, 950.0, 700.0)
     system.add_container(container)
 
     # Gravity
@@ -50,7 +50,7 @@ def build(system: ParticleSystem) -> None:
         constraint = DistanceConstraint(
             particles[i],
             particles[i + 1],
-            distance=25.0,
+            distance=30.0,
             stiffness=0.5,
         )
         system.add_constraint(constraint)
