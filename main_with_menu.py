@@ -216,15 +216,6 @@ def main() -> None:
 
         pygame.display.flip()
 
-    def cleanup_and_back():
-        """Helper to go back to menu."""
-        menu.go_to_main_menu()
-
-    def reset_scene():
-        """Helper to reset current scene."""
-        if controller:
-            controller.request_reset()
-
     pygame.quit()
 
 

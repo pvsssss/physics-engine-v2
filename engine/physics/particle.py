@@ -8,8 +8,8 @@ from engine.math.vec import Vec2
 class Particle:
     """
     Particle object dataclass
-    Particles do not have any sort of
-    angular velocity/acceleration/force
+    Particles do not have any sort of angular
+    component in velocity/acceleration/force
     """
 
     position: Vec2

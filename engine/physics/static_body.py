@@ -14,6 +14,6 @@ class StaticBody:
     # default values
     inv_mass: float = 0.0
     velocity: Vec2 = Vec2(0.0, 0.0)
-    restitution: float = 0.8
-    friction: float = 0.1
+    restitution: float = 1.0
+    friction: float = 0.0
     alive: bool = True

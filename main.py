@@ -20,6 +20,7 @@ def main() -> None:
 
     # enter your scene here
     scene = projectile_scene
+    # scene_config = buoyancy_config
     scene.build(psystem)
 
     if scene == projectile_scene:
@@ -33,6 +34,7 @@ def main() -> None:
     if scene == buoyancy_scene:
         renderer.draw_water = True
         renderer.draw_scale = True
+        renderer.draw_containers = False
         renderer.use_bottom_left_origin = True
         SCREEN_HEIGHT = 700.0
         water_bottom_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_BOTTOM
@@ -103,7 +105,13 @@ def main() -> None:
             tick_interval=projectile_config.SCALE_TICK_INTERVAL,
             scale_color=projectile_config.SCALE_COLOR,
         )
-
+        if scene == buoyancy_scene:
+            renderer.draw_water_region(
+                water_top=water_top_engine,
+                water_bottom=water_bottom_engine,
+                water_color=buoyancy_config.WATER_COLOR,
+                surface_color=buoyancy_config.WATER_SURFACE_COLOR,
+            )
         # Draw trajectory trails
         for p in psystem.particles:
             if p.alive:
