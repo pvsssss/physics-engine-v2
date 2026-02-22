@@ -18,8 +18,8 @@ def build(system: ParticleSystem) -> None:
     container = CircleContainer(Vec2(500.0, 350.0), 300.0)
     system.add_container(container)
 
-    # gravity = Gravity(Vec2(0.0, 1200.0))
-    # system.add_global_force(gravity)
+    gravity = Gravity(Vec2(0.0, 1200.0))
+    system.add_global_force(gravity)
 
     for i in range(10):
         p = Particle(
@@ -27,12 +27,12 @@ def build(system: ParticleSystem) -> None:
                 random.uniform(250.0, 750.0),
                 350.0,
             ),
-            velocity=Vec2(random.uniform(-500.0, 500.0), random.uniform(-500.0, 500.0)),
+            velocity=Vec2(random.uniform(-100.0, 100.0), random.uniform(-100.0, 100.0)),
             radius=10.0,
             mass=1.0,
-            restitution=1.0,
-            friction=0.0,
-            damping=0.0,
+            restitution=0.7,
+            friction=0.1,
+            damping=0.05,
             sleep_threshold=1.0,
         )
         system.add_particle(p)

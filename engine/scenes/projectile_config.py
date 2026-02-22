@@ -17,7 +17,7 @@ INITIAL_POSITION = Vec2(100.0, 100.0)
 
 # Initial velocity (vx, vy) in units per second
 # Positive vx = rightward, Positive vy = upward
-INITIAL_VELOCITY = Vec2(300.0, 500.0)
+INITIAL_VELOCITY = Vec2(500.0, 700.0)
 
 # Gravity acceleration (x, y) in units per second squared
 # Standard setup: Vec2(0.0, -980.0) for downward gravity
@@ -57,8 +57,8 @@ MAX_TRAIL_POINTS = 1000
 # These are in bottom-left origin coordinates
 CONTAINER_X = 0.0
 CONTAINER_Y = 0.0
-CONTAINER_WIDTH = 950.0
-CONTAINER_HEIGHT = 700.0
+CONTAINER_WIDTH = 1236.0
+CONTAINER_HEIGHT = 864.0
 
 # Distance between scale tick marks (in world units)
 SCALE_TICK_INTERVAL = 100.0

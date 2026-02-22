@@ -10,7 +10,7 @@ from engine.scenes import projectile_config as config
 
 # Screen height for coordinate transformation
 # This should match your render_config.py SCREEN_HEIGHT
-SCREEN_HEIGHT = 700.0
+SCREEN_HEIGHT = 864.0
 
 
 def bottom_left_to_top_left(position: Vec2) -> Vec2:

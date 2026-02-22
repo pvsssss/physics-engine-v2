@@ -34,7 +34,7 @@ class PygameRenderer:
         self.draw_scale = False
 
         # Coordinate system mode for projectile/buoyancy scenes
-        self.use_bottom_left_origin = False
+        self.use_bottom_left_origin = True
 
         # Water region rendering
         self.draw_water = False
@@ -157,7 +157,7 @@ class PygameRenderer:
         x2, y2 = self.camera.world_to_screen(container.max.x, container.max.y)
         width = x2 - x1
         height = y2 - y1
-        pygame.draw.rect(self.screen, CONTAINER_COLOR, (x1, y1, width, height), 2)
+        pygame.draw.rect(self.screen, CONTAINER_COLOR, (x1, y1, width, height), 1)
 
     def _draw_circle_container(self, container):
         """Draw circular container bounds"""
@@ -397,7 +397,7 @@ class PygameRenderer:
             return
 
         # Bottom scale (X-axis)
-        y_bottom = SCREEN_HEIGHT - 1
+        y_bottom = SCREEN_HEIGHT - 2
 
         # Find the range of world coordinates visible
         world_x_start = self.camera.offset_x
@@ -433,37 +433,50 @@ class PygameRenderer:
 
         # Left scale (Y-axis)
         x_left = 0
+        world_height = self.camera.height / self.camera.pixels_per_unit
 
-        world_y_start = self.camera.offset_y
-        world_y_end = world_y_start + SCREEN_HEIGHT / self.camera.pixels_per_unit
-
-        tick_start = int(world_y_start / tick_interval) * tick_interval
-        y_pos = tick_start
-
-        while y_pos <= world_y_end:
-            _, screen_y = self.camera.world_to_screen(0, y_pos)
-
-            if 0 <= screen_y <= SCREEN_HEIGHT:
-                # Draw tick mark
+        if self.use_bottom_left_origin:
+            # Iterate in DISPLAY coords (0 = bottom, increases upward).
+            # This guarantees ticks land on clean multiples of tick_interval in
+            # bottom-left space and "0" always appears at the bottom edge.
+            display_y = 0.0
+            while display_y <= world_height:
+                # Convert display_y (bottom-left) → camera y (top-left, y increases downward)
+                y_cam = world_height - display_y
+                _, screen_y = self.camera.world_to_screen(0, y_cam)
+                # Clamp so the "0" tick at screen_y == camera.height doesn't go out of bounds
+                screen_y = max(0, min(screen_y, self.camera.height - 1))
                 pygame.draw.line(
                     self.screen,
                     scale_color,
-                    (x_left, screen_y),
-                    (x_left + 10, screen_y),
+                    (x_left + 2, screen_y),
+                    (x_left + 12, screen_y),
                     2,
                 )
-
-                # Convert Y coordinate for display
-                if self.use_bottom_left_origin:
-                    display_y = SCREEN_HEIGHT - y_pos
-                else:
-                    display_y = y_pos
-
                 label = f"{int(display_y)}"
                 text_surface = self.small_font.render(label, True, scale_color)
-                self.screen.blit(text_surface, (x_left + 15, screen_y - 8))
-
-            y_pos += tick_interval
+                self.screen.blit(text_surface, (x_left + 17, max(0, screen_y - 6)))
+                display_y += tick_interval
+        else:
+            # Top-left origin: iterate in camera/world coordinates as before
+            world_y_start = self.camera.offset_y
+            world_y_end = world_y_start + world_height
+            tick_start = int(world_y_start / tick_interval) * tick_interval
+            y_pos = tick_start
+            while y_pos <= world_y_end:
+                _, screen_y = self.camera.world_to_screen(0, y_pos)
+                if 0 <= screen_y <= SCREEN_HEIGHT:
+                    pygame.draw.line(
+                        self.screen,
+                        scale_color,
+                        (x_left + 2, screen_y),
+                        (x_left + 12, screen_y),
+                        2,
+                    )
+                    label = f"{int(y_pos)}"
+                    text_surface = self.small_font.render(label, True, scale_color)
+                    self.screen.blit(text_surface, (x_left + 17, screen_y - 6))
+                y_pos += tick_interval
 
     def clear_trajectories(self):
         """Clears all trajectory trails."""

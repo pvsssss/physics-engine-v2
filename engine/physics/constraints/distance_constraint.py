@@ -1,6 +1,6 @@
 from __future__ import annotations
 from engine.physics.particle import Particle
-from engine.physics.constraints.base import Constraint
+from engine.physics.constraints.base_constraint import Constraint
 from engine.math.vec import Vec2
 
 

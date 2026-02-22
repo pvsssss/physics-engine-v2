@@ -16,7 +16,7 @@ def build(system: ParticleSystem) -> None:
     system.containers.clear()
 
     # Container
-    container = RectangleContainer(0.0, 0.0, 950.0, 700.0)
+    container = RectangleContainer(0.0, 0.0, 1236.0, 864.0)
     system.add_container(container)
 
     # Gravity
@@ -24,7 +24,7 @@ def build(system: ParticleSystem) -> None:
     system.add_global_force(gravity)
 
     # Create rope chain
-    rope_length = 10
+    rope_length = 15
     particles = []
 
     for i in range(rope_length):
@@ -32,7 +32,7 @@ def build(system: ParticleSystem) -> None:
         mass = float("inf") if i == 0 else 10.0
         velocity_scale = i / rope_length
         p = Particle(
-            position=Vec2(500.0, 100.0 + i * 30.0),
+            position=Vec2(620.0, 200.0 + i * 30.0),
             velocity=Vec2(
                 500.0 * velocity_scale,  # Horizontal velocity (swing)
                 100.0,

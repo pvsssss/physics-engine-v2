@@ -24,7 +24,7 @@ from engine.math.vec import Vec2
 WATER_Y_BOTTOM = 0.0
 WATER_Y_TOP = 300.0  # Water surface at 300 units from bottom
 WATER_X_LEFT = 0.0
-WATER_X_RIGHT = 1000.0
+WATER_X_RIGHT = 1236.0
 
 # Water visual appearance
 WATER_COLOR = (50, 120, 200, 128)  # Blue with transparency
@@ -111,8 +111,8 @@ COLOR_HIGH_DENSITY = (50, 100, 255)  # Blue (sinks)
 
 CONTAINER_X = 0.0
 CONTAINER_Y = 0.0
-CONTAINER_WIDTH = 950.0
-CONTAINER_HEIGHT = 700.0
+CONTAINER_WIDTH = 1236.0
+CONTAINER_HEIGHT = 864.0
 
 # ========================================
 # DISPLAY SETTINGS

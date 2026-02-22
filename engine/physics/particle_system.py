@@ -9,7 +9,7 @@ from engine.physics.collision.broadphase import SpatialHashGrid
 from engine.physics.collision.circle_circle import circle_circle
 from engine.physics.solver import resolve_contact, positional_correction
 from engine.physics.containers.base import Container
-from engine.physics.constraints.base import Constraint
+from engine.physics.constraints.base_constraint import Constraint
 
 
 class ParticleSystem:

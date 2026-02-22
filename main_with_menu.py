@@ -31,9 +31,17 @@ def main() -> None:
     pygame.init()
 
     # Screen setup
-    SCREEN_WIDTH = 1200
-    SCREEN_HEIGHT = 700
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    # SCREEN_WIDTH = 1536
+    # SCREEN_HEIGHT = 864
+
+    monitor_info = pygame.display.Info()
+
+    SCREEN_WIDTH = monitor_info.current_w
+    SCREEN_HEIGHT = monitor_info.current_h
+    # print(SCREEN_WIDTH, SCREEN_HEIGHT)
+    screen = pygame.display.set_mode(
+        (SCREEN_WIDTH, SCREEN_HEIGHT),
+    )
     pygame.display.set_caption("Physics Engine")
 
     # Create menu system
@@ -122,7 +130,12 @@ def main() -> None:
 
             # Build scene
             current_scene_module.build(psystem)
-
+            if scene_name == "buoyancy_scene":
+                solver.PERCENT = 4
+                solver.MAX_CORRECTION_PER_ITERATION = 20000
+            else:
+                solver.PERCENT = 0.2
+                solver.MAX_CORRECTION_PER_ITERATION = 2
             # Configure renderer for scene
             if scene_name == "projectile_scene":
                 renderer.draw_trajectories = True
@@ -133,8 +146,6 @@ def main() -> None:
                 renderer.draw_water = True
                 renderer.draw_scale = True
                 renderer.use_bottom_left_origin = True
-                solver.PERCENT = 4
-                solver.MAX_CORRECTION_PER_ITERATION = 20000
 
             # Create simulation UI
             sim_ui = SimulationUI(
@@ -161,7 +172,6 @@ def main() -> None:
 
             # Scale toggle (All scenes)
             renderer.draw_scale = sim_ui.get_toggle("scale")
-            accumulator = 0.0
 
         # Cleanup when leaving simulation
         if menu.state != MenuState.SIMULATION and psystem is not None:
@@ -227,7 +237,7 @@ def render_simulation(screen, renderer, psystem, sim_ui, scene_module):
     # screen.fill((20, 25, 30))
 
     # Create a subsurface for the simulation area
-    sim_width = screen.get_width() - 250
+    sim_width = 1236
     sim_surface = screen.subsurface((0, 0, sim_width, screen.get_height()))
 
     # Render physics to subsurface
@@ -249,7 +259,7 @@ def render_simulation(screen, renderer, psystem, sim_ui, scene_module):
 
     # Draw water (buoyancy scene)
     if scene_module.__name__.endswith("buoyancy_scene") and renderer.draw_water:
-        SCREEN_HEIGHT = 700.0
+        SCREEN_HEIGHT = 864.0
         water_top_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_TOP
         water_bottom_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_BOTTOM
 

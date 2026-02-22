@@ -42,8 +42,8 @@ class MenuSystem:
     def _create_main_menu(self):
         """Create main menu screen elements."""
         # Main panel
-        panel_width = 1200
-        panel_height = 700
+        panel_width = 1536
+        panel_height = 864
         panel_x = (self.screen_width - panel_width) // 2
         panel_y = (self.screen_height - panel_height) // 2
 
@@ -83,8 +83,8 @@ class MenuSystem:
     def _create_scene_select(self):
         """Create scene selection screen elements."""
         # Main panel
-        panel_width = 1200
-        panel_height = 700
+        panel_width = 1536
+        panel_height = 864
         panel_x = (self.screen_width - panel_width) // 2
         panel_y = (self.screen_height - panel_height) // 2
 
@@ -235,8 +235,8 @@ class SimulationUI:
         self.toggles = {}
 
         # Layout: simulation on left, controls on right
-        self.panel_width = 250
-        self.sim_width = 950
+        self.panel_width = 300
+        self.sim_width = 1236
 
         # Control panel
         self.control_panel = Panel(
