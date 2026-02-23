@@ -34,7 +34,7 @@ class PygameRenderer:
         self.draw_scale = False
 
         # Coordinate system mode for projectile/buoyancy scenes
-        self.use_bottom_left_origin = True
+        # self.use_bottom_left_origin = True
 
         # Water region rendering
         self.draw_water = False
@@ -170,15 +170,15 @@ class PygameRenderer:
     # COORDINATE CONVERSION HELPERS
     # ========================================
 
-    def _engine_to_display_coords(self, x, y):
-        """
-        Convert engine coordinates to display coordinates.
-        If using bottom-left origin, converts from top-left to bottom-left.
-        Otherwise returns coordinates as-is.
-        """
-        if self.use_bottom_left_origin:
-            return (x, SCREEN_HEIGHT - y)
-        return (x, y)
+    # def _engine_to_display_coords(self, x, y):
+    #     """
+    #     Convert engine coordinates to display coordinates.
+    #     If using bottom-left origin, converts from top-left to bottom-left.
+    #     Otherwise returns coordinates as-is.
+    #     """
+    #     if self.use_bottom_left_origin:
+    #         return (x, SCREEN_HEIGHT - y)
+    #     return (x, y)
 
     # ========================================
     # BUOYANCY SCENE FEATURES
@@ -348,70 +348,40 @@ class PygameRenderer:
         pygame.draw.lines(self.screen, trajectory_color, False, screen_points, 2)
 
     def draw_particle_coordinates(self, particle, coord_color=(200, 200, 200)):
-        """
-        Draws the coordinates of the particle following it.
-        Displays below particle if on screen, above if not.
-        For projectile scene, shows coordinates in bottom-left origin system.
-        """
         if not self.draw_coordinates:
             return
-
         x, y = self.camera.world_to_screen(particle.position.x, particle.position.y)
 
-        # Convert to display coordinates (bottom-left origin for projectile scene)
-        display_x, display_y = self._engine_to_display_coords(
-            particle.position.x, particle.position.y
-        )
-
-        # Format coordinates
-        coord_text = f"({display_x:.1f}, {display_y:.1f})"
+        # Print native coordinates directly
+        coord_text = f"({particle.position.x:.1f}, {particle.position.y:.1f})"
         text_surface = self.small_font.render(coord_text, True, coord_color)
         text_width = text_surface.get_width()
         text_height = text_surface.get_height()
 
-        # Determine position (below particle by default, above if near bottom)
         offset_y = int(particle.radius * self.camera.pixels_per_unit) + 5
 
-        # If particle is near bottom of screen, show coordinates above
+        # If particle is near bottom of screen (Screen Y near height), show coordinates above
         if y + offset_y + text_height > SCREEN_HEIGHT - 10:
             text_y = y - offset_y - text_height
         else:
             text_y = y + offset_y
 
-        # Center text horizontally under particle
-        text_x = x - text_width // 2
-
-        # Clamp to screen bounds
-        text_x = max(5, min(text_x, SCREEN_WIDTH - text_width - 5))
+        text_x = max(5, min(x - text_width // 2, SCREEN_WIDTH - text_width - 5))
         text_y = max(5, min(text_y, SCREEN_HEIGHT - text_height - 5))
-
         self.screen.blit(text_surface, (text_x, text_y))
 
     def draw_scale_markers(self, tick_interval=100.0, scale_color=(150, 150, 150)):
-        """
-        Draws scale markers on the left and bottom edges of the screen.
-        Shows world coordinates at regular intervals.
-        For projectile scene, shows coordinates with bottom-left origin (0,0).
-        """
         if not self.draw_scale:
             return
 
-        # Bottom scale (X-axis)
         y_bottom = SCREEN_HEIGHT - 2
-
-        # Find the range of world coordinates visible
         world_x_start = self.camera.offset_x
         world_x_end = world_x_start + SCREEN_WIDTH / self.camera.pixels_per_unit
 
-        # Draw tick marks at intervals
-        tick_start = int(world_x_start / tick_interval) * tick_interval
-        x_pos = tick_start
-
+        x_pos = int(world_x_start / tick_interval) * tick_interval
         while x_pos <= world_x_end:
             screen_x, _ = self.camera.world_to_screen(x_pos, 0)
-
             if 0 <= screen_x <= SCREEN_WIDTH:
-                # Draw tick mark
                 pygame.draw.line(
                     self.screen,
                     scale_color,
@@ -419,33 +389,23 @@ class PygameRenderer:
                     (screen_x, y_bottom),
                     2,
                 )
-
-                # For bottom-left origin, X coordinate stays the same
-                display_x = x_pos if self.use_bottom_left_origin else x_pos
-                label = f"{int(display_x)}"
-                text_surface = self.small_font.render(label, True, scale_color)
-                text_width = text_surface.get_width()
-                self.screen.blit(
-                    text_surface, (screen_x - text_width // 2, y_bottom - 25)
+                text_surface = self.small_font.render(
+                    f"{int(x_pos)}", True, scale_color
                 )
-
+                self.screen.blit(
+                    text_surface,
+                    (screen_x - text_surface.get_width() // 2, y_bottom - 25),
+                )
             x_pos += tick_interval
 
-        # Left scale (Y-axis)
         x_left = 0
-        world_height = self.camera.height / self.camera.pixels_per_unit
+        world_y_start = self.camera.offset_y
+        world_y_end = world_y_start + self.camera.height / self.camera.pixels_per_unit
 
-        if self.use_bottom_left_origin:
-            # Iterate in DISPLAY coords (0 = bottom, increases upward).
-            # This guarantees ticks land on clean multiples of tick_interval in
-            # bottom-left space and "0" always appears at the bottom edge.
-            display_y = 0.0
-            while display_y <= world_height:
-                # Convert display_y (bottom-left) → camera y (top-left, y increases downward)
-                y_cam = world_height - display_y
-                _, screen_y = self.camera.world_to_screen(0, y_cam)
-                # Clamp so the "0" tick at screen_y == camera.height doesn't go out of bounds
-                screen_y = max(0, min(screen_y, self.camera.height - 1))
+        y_pos = int(world_y_start / tick_interval) * tick_interval
+        while y_pos <= world_y_end:
+            _, screen_y = self.camera.world_to_screen(0, y_pos)
+            if 0 <= screen_y <= SCREEN_HEIGHT:
                 pygame.draw.line(
                     self.screen,
                     scale_color,
@@ -453,31 +413,106 @@ class PygameRenderer:
                     (x_left + 12, screen_y),
                     2,
                 )
-                label = f"{int(display_y)}"
-                text_surface = self.small_font.render(label, True, scale_color)
+                text_surface = self.small_font.render(
+                    f"{int(y_pos)}", True, scale_color
+                )
                 self.screen.blit(text_surface, (x_left + 17, max(0, screen_y - 6)))
-                display_y += tick_interval
-        else:
-            # Top-left origin: iterate in camera/world coordinates as before
-            world_y_start = self.camera.offset_y
-            world_y_end = world_y_start + world_height
-            tick_start = int(world_y_start / tick_interval) * tick_interval
-            y_pos = tick_start
-            while y_pos <= world_y_end:
-                _, screen_y = self.camera.world_to_screen(0, y_pos)
-                if 0 <= screen_y <= SCREEN_HEIGHT:
-                    pygame.draw.line(
-                        self.screen,
-                        scale_color,
-                        (x_left + 2, screen_y),
-                        (x_left + 12, screen_y),
-                        2,
-                    )
-                    label = f"{int(y_pos)}"
-                    text_surface = self.small_font.render(label, True, scale_color)
-                    self.screen.blit(text_surface, (x_left + 17, screen_y - 6))
-                y_pos += tick_interval
+            y_pos += tick_interval
 
     def clear_trajectories(self):
         """Clears all trajectory trails."""
         self.trajectory_trails.clear()
+
+    def draw_particle_highlight(self, particle):
+        """Draws a bright yellow antialiased highlight ring around the selected particle."""
+        if not particle.alive:
+            return
+
+        x, y = self.camera.world_to_screen(particle.position.x, particle.position.y)
+        radius = int(particle.radius * self.camera.pixels_per_unit)
+
+        highlight_color = (255, 255, 0)
+
+        pygame.draw.circle(self.screen, highlight_color, (x, y), radius, 2)
+        # Draw 3 concentric antialiased circles to simulate a line thickness of 3
+        # for offset in (2, 3, 4):
+        #     pygame.gfxdraw.aacircle(self.screen, x, y, radius + offset, highlight_color)
+
+    def draw_velocity_control(self, particle):
+        """Draws the interactive velocity vector and control circle."""
+        if not particle.alive:
+            return
+        import math
+
+        # 1. Calculate the start and end points in mathematical WORLD space first
+        start_world_x = particle.position.x
+        start_world_y = particle.position.y
+
+        # Scale matches the interaction handler (0.1)
+        end_world_x = start_world_x + particle.velocity.x * 0.1
+        end_world_y = start_world_y + particle.velocity.y * 0.1
+
+        # 2. Convert BOTH points cleanly to screen space
+        x, y = self.camera.world_to_screen(start_world_x, start_world_y)
+        end_x, end_y = self.camera.world_to_screen(end_world_x, end_world_y)
+
+        # Draw bright green line
+        pygame.draw.line(self.screen, (0, 255, 0), (x, y), (end_x, end_y), 3)
+
+        # Calculate screen-space angle for the arrowhead
+        screen_dx = end_x - x
+        screen_dy = end_y - y
+        angle = math.atan2(screen_dy, screen_dx)
+
+        arrow_len = 14
+        a1 = angle + math.pi * 0.8
+        a2 = angle - math.pi * 0.8
+
+        pt1 = (end_x + math.cos(a1) * arrow_len, end_y + math.sin(a1) * arrow_len)
+        pt2 = (end_x + math.cos(a2) * arrow_len, end_y + math.sin(a2) * arrow_len)
+        pygame.draw.polygon(self.screen, (0, 255, 0), [(end_x, end_y), pt1, pt2])
+
+        # Draw the translucent white control circle (120 out of 255 alpha)
+        pygame.gfxdraw.filled_circle(
+            self.screen, end_x, end_y, 10, (255, 255, 255, 120)
+        )
+        # Draw a slightly transparent black outline for it
+        pygame.gfxdraw.aacircle(self.screen, end_x, end_y, 10, (0, 0, 0, 200))
+
+        # Draw 'v' text
+        text_surface = self.small_font.render("v", True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=(end_x, end_y))
+        self.screen.blit(text_surface, text_rect)
+
+    def draw_playback_indicator(self, is_paused: bool):
+        """Draws a translucent Play/Pause icon at the top center of the screen."""
+        sim_width = self.screen.get_width()
+        x, y = 40, 10
+
+        # # Draw a translucent dark background circle
+        # pygame.gfxdraw.filled_circle(self.screen, x, y, 24, (0, 0, 0, 100))
+        # pygame.gfxdraw.aacircle(self.screen, x, y, 24, (200, 200, 200, 150))
+
+        icon_color = (255, 255, 255, 200)
+
+        if is_paused:
+            # # Draw Pause icon (two vertical bars)
+            # pygame.gfxdraw.box(
+            #     self.screen, pygame.Rect(x - 8, y - 10, 6, 20), icon_color
+            # )
+            # pygame.gfxdraw.box(
+            #     self.screen, pygame.Rect(x + 2, y - 10, 6, 20), icon_color
+            # )
+
+            # Add small "PAUSED" text below it
+            text_surface = self.font.render("PAUSED", True, (200, 200, 200))
+            text_rect = text_surface.get_rect(center=(x, y + 35))
+            self.screen.blit(text_surface, text_rect)
+        else:
+            # Draw Play icon (triangle)
+            text_surface = self.font.render("PLAYING", True, (200, 200, 200))
+            text_rect = text_surface.get_rect(center=(x, y + 35))
+            self.screen.blit(text_surface, text_rect)
+            # pts = [(x - 4, y - 10), (x - 4, y + 10), (x + 10, y)]
+            # pygame.gfxdraw.filled_polygon(self.screen, pts, icon_color)
+            # pygame.gfxdraw.aapolygon(self.screen, pts, icon_color)

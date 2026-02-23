@@ -5,11 +5,11 @@ Main entry point with UI navigation.
 
 import pygame
 
-
 from engine.physics.particle_system import ParticleSystem
 from engine.core.simulation_controller import SimulationController
 from engine.render.pygame_renderer import PygameRenderer
 from engine.physics import solver
+from engine.core.interaction import InteractionHandler  # Added Interaction Handler
 
 # Import scenes
 from engine.scenes import (
@@ -31,14 +31,10 @@ def main() -> None:
     pygame.init()
 
     # Screen setup
-    # SCREEN_WIDTH = 1536
-    # SCREEN_HEIGHT = 864
-
     monitor_info = pygame.display.Info()
 
     SCREEN_WIDTH = monitor_info.current_w
     SCREEN_HEIGHT = monitor_info.current_h
-    # print(SCREEN_WIDTH, SCREEN_HEIGHT)
     screen = pygame.display.set_mode(
         (SCREEN_WIDTH, SCREEN_HEIGHT),
     )
@@ -52,6 +48,7 @@ def main() -> None:
     controller = None
     psystem = None
     sim_ui = None
+    interaction = None  # Added Interaction Handler state
     current_scene_module = None
 
     # Main loop
@@ -84,29 +81,39 @@ def main() -> None:
                     elif event.key == pygame.K_s:
                         controller.request_step()
                     elif event.key == pygame.K_r:
-                        controller.request_reset()
+                        controller.request_reset()  # Normal reset (keeps custom config)
+                    elif event.key == pygame.K_w:
+                        if sim_ui:
+                            sim_ui._reset_config()  # Hard reset (restores defaults)
                     elif event.key == pygame.K_c:
                         if renderer:
                             renderer.draw_constraints = not renderer.draw_constraints
                     elif event.key == pygame.K_t:
-                        if renderer:
+                        if sim_ui:
                             sim_ui.toggle("trajectory")
                     elif event.key == pygame.K_o:
-                        if renderer:
+                        if sim_ui:
                             sim_ui.toggle("coordinates")
                     elif event.key == pygame.K_l:
-                        if renderer:
+                        if sim_ui:
                             sim_ui.toggle("scale")
-                    elif event.key == pygame.K_w:
-                        if renderer:
+                    elif (
+                        event.key == pygame.K_q
+                    ):  # Shifted from 'w' to free up Reset Config
+                        if sim_ui:
                             sim_ui.toggle("water")
-
-            # Handle UI events
+            # Handle UI and Interaction events
             if menu.state != MenuState.SIMULATION:
                 menu.handle_event(event)
             else:
+                ui_handled = False
                 if sim_ui:
-                    sim_ui.handle_event(event)
+                    ui_handled = sim_ui.handle_event(event)
+
+                # If UI didn't consume the event, and we are PAUSED, let interaction handler run
+                if not ui_handled and controller and controller.paused and interaction:
+                    # 1236 is the simulation area width
+                    interaction.handle_event(event, renderer.camera, psystem, 1236)
 
         # State transitions - setup simulation when entering
         if menu.state == MenuState.SIMULATION and psystem is None:
@@ -114,6 +121,7 @@ def main() -> None:
             renderer = PygameRenderer()
             controller = SimulationController()
             psystem = ParticleSystem()
+            interaction = InteractionHandler()  # Initialize Interaction Handler
 
             # Get scene module
             scene_info = SCENE_INFO[menu.selected_scene]
@@ -136,6 +144,7 @@ def main() -> None:
             else:
                 solver.PERCENT = 0.2
                 solver.MAX_CORRECTION_PER_ITERATION = 2
+
             # Configure renderer for scene
             if scene_name == "projectile_scene":
                 renderer.draw_trajectories = True
@@ -157,6 +166,7 @@ def main() -> None:
                 on_pause=lambda: controller.toggle_pause() if controller else None,
                 on_step=lambda: controller.request_step() if controller else None,
             )
+
         if menu.state == MenuState.SIMULATION and renderer and sim_ui:
             # Constraints toggle (Rope/Circle scenes)
             renderer.draw_constraints = sim_ui.get_toggle("constraints")
@@ -179,6 +189,7 @@ def main() -> None:
             controller = None
             psystem = None
             sim_ui = None
+            interaction = None  # Clear Interaction Handler
             current_scene_module = None
             accumulator = 0.0
 
@@ -189,6 +200,10 @@ def main() -> None:
 
             if controller and controller.should_reset():
                 current_scene_module.build(psystem)
+                if interaction:
+                    interaction.selected_particle = None
+                    interaction.dragging_position = False
+                    interaction.dragging_velocity = False
                 if renderer:
                     renderer.clear_trajectories()
                 accumulator = 0.0
@@ -211,7 +226,15 @@ def main() -> None:
                 accumulator -= FIXED_DT
 
             # Render simulation
-            render_simulation(screen, renderer, psystem, sim_ui, current_scene_module)
+            render_simulation(
+                screen,
+                renderer,
+                psystem,
+                sim_ui,
+                current_scene_module,
+                interaction,
+                controller.paused,
+            )
 
             # Draw FPS
             fps_font = pygame.font.SysFont("consolas", 18)
@@ -229,12 +252,11 @@ def main() -> None:
     pygame.quit()
 
 
-def render_simulation(screen, renderer, psystem, sim_ui, scene_module):
+def render_simulation(
+    screen, renderer, psystem, sim_ui, scene_module, interaction=None, is_paused=False
+):
     """Render the simulation screen with physics and UI."""
     from engine.scenes import projectile_config, buoyancy_config
-
-    # Clear screen
-    # screen.fill((20, 25, 30))
 
     # Create a subsurface for the simulation area
     sim_width = 1236
@@ -264,8 +286,8 @@ def render_simulation(screen, renderer, psystem, sim_ui, scene_module):
         water_bottom_engine = SCREEN_HEIGHT - buoyancy_config.WATER_Y_BOTTOM
 
         renderer.draw_water_region(
-            water_top=water_top_engine,
-            water_bottom=water_bottom_engine,
+            water_top=buoyancy_config.WATER_Y_TOP,
+            water_bottom=buoyancy_config.WATER_Y_BOTTOM,
             water_color=buoyancy_config.WATER_COLOR,
             surface_color=buoyancy_config.WATER_SURFACE_COLOR,
         )
@@ -302,6 +324,11 @@ def render_simulation(screen, renderer, psystem, sim_ui, scene_module):
         if p.alive:
             renderer.draw_particle(p)
 
+    # Add interaction highlights strictly after particles
+    if interaction and interaction.selected_particle and is_paused:
+        renderer.draw_particle_highlight(interaction.selected_particle)
+        renderer.draw_velocity_control(interaction.selected_particle)
+
     # Draw constraints
     if renderer.draw_constraints:
         for constraint in psystem.constraints:
@@ -315,9 +342,12 @@ def render_simulation(screen, renderer, psystem, sim_ui, scene_module):
             if p.alive:
                 renderer.draw_particle_coordinates(p)
 
+    renderer.draw_playback_indicator(is_paused)
+
     # Restore full screen
     renderer.screen = screen
-
+    if hasattr(sim_ui, "update"):
+        sim_ui.update(psystem, interaction, is_paused)
     # Draw UI panel on top
     sim_ui.draw(screen)
 
