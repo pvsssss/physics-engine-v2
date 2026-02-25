@@ -102,6 +102,9 @@ def main() -> None:
                     ):  # Shifted from 'w' to free up Reset Config
                         if sim_ui:
                             sim_ui.toggle("water")
+                    elif event.key == pygame.K_v:
+                        if sim_ui:
+                            sim_ui.toggle("velocities")
             # Handle UI and Interaction events
             if menu.state != MenuState.SIMULATION:
                 menu.handle_event(event)
@@ -182,6 +185,9 @@ def main() -> None:
 
             # Scale toggle (All scenes)
             renderer.draw_scale = sim_ui.get_toggle("scale")
+
+            # Velocities toggle (All scenes)
+            renderer.draw_velocities = sim_ui.get_toggle("velocities")
 
         # Cleanup when leaving simulation
         if menu.state != MenuState.SIMULATION and psystem is not None:
@@ -323,6 +329,8 @@ def render_simulation(
     for p in psystem.particles:
         if p.alive:
             renderer.draw_particle(p)
+            if getattr(renderer, "draw_velocities", False):
+                renderer.draw_particle_velocities(p)
 
     # Add interaction highlights strictly after particles
     if interaction and interaction.selected_particle and is_paused:

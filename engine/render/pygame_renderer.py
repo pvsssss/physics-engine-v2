@@ -72,8 +72,8 @@ class PygameRenderer:
         pygame.gfxdraw.aacircle(self.screen, x, y, radius, color)
         pygame.gfxdraw.filled_circle(self.screen, x, y, radius, color)
 
-        if self.draw_velocities:
-            self._draw_velocity(particle)
+        # if self.draw_velocities:
+        #     self._draw_velocity(particle)
 
     def draw_constraint(self, p1, p2):
         x1, y1 = self.camera.world_to_screen(p1.position.x, p1.position.y)
@@ -110,15 +110,15 @@ class PygameRenderer:
         for y in range(0, SCREEN_HEIGHT, size):
             pygame.draw.line(self.screen, GRID_COLOR, (0, y), (SCREEN_WIDTH, y))
 
-    def _draw_velocity(self, particle):
-        x, y = self.camera.world_to_screen(particle.position.x, particle.position.y)
+    # def _draw_velocity(self, particle):
+    #     x, y = self.camera.world_to_screen(particle.position.x, particle.position.y)
 
-        vx = particle.velocity.x * 0.1
-        vy = particle.velocity.y * 0.1
+    #     vx = particle.velocity.x * 0.1
+    #     vy = particle.velocity.y * 0.1
 
-        pygame.draw.line(
-            self.screen, VELOCITY_COLOR, (x, y), (x + int(vx), y + int(vy)), 2
-        )
+    #     pygame.draw.line(
+    #         self.screen, VELOCITY_COLOR, (x, y), (x + int(vx), y + int(vy)), 2
+    #     )
 
     def _draw_text(self, text, x, y, font=None, color=(200, 200, 200)):
         if font is None:
@@ -516,3 +516,47 @@ class PygameRenderer:
             # pts = [(x - 4, y - 10), (x - 4, y + 10), (x + 10, y)]
             # pygame.gfxdraw.filled_polygon(self.screen, pts, icon_color)
             # pygame.gfxdraw.aapolygon(self.screen, pts, icon_color)
+
+    def draw_particle_velocities(self, particle):
+        """Draws a red vector indicating the particle's current live velocity."""
+        if not particle.alive or (
+            particle.velocity.x == 0 and particle.velocity.y == 0
+        ):
+            return
+
+        import math
+
+        # Calculate world space endpoints (scaled by 0.1 to match interactive vector)
+        start_world_x = particle.position.x
+        start_world_y = particle.position.y
+        end_world_x = start_world_x + particle.velocity.x * 0.1
+        end_world_y = start_world_y + particle.velocity.y * 0.1
+
+        # Convert to screen space
+        x, y = self.camera.world_to_screen(start_world_x, start_world_y)
+        end_x, end_y = self.camera.world_to_screen(end_world_x, end_world_y)
+
+        # Draw red vector line
+        pygame.draw.line(self.screen, (255, 50, 50), (x, y), (end_x, end_y), 2)
+
+        # Draw arrowhead
+        screen_dx = end_x - x
+        screen_dy = end_y - y
+        length = math.hypot(screen_dx, screen_dy)
+
+        if length > 4:  # Only draw arrowhead if the velocity is noticeably large
+            angle = math.atan2(screen_dy, screen_dx)
+            arrow_len = 8
+            a1 = angle + math.pi * 0.8
+            a2 = angle - math.pi * 0.8
+
+            pt1 = (end_x + math.cos(a1) * arrow_len, end_y + math.sin(a1) * arrow_len)
+            pt2 = (end_x + math.cos(a2) * arrow_len, end_y + math.sin(a2) * arrow_len)
+
+            pts = [
+                (int(end_x), int(end_y)),
+                (int(pt1[0]), int(pt1[1])),
+                (int(pt2[0]), int(pt2[1])),
+            ]
+            pygame.gfxdraw.filled_polygon(self.screen, pts, (255, 50, 50, 255))
+            pygame.gfxdraw.aapolygon(self.screen, pts, (255, 50, 50, 255))

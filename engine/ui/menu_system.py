@@ -215,6 +215,7 @@ class MenuSystem:
 
 
 class SimulationUI:
+
     def __init__(
         self,
         screen_width: int,
@@ -241,14 +242,15 @@ class SimulationUI:
         self.is_paused = False
         self.last_selected_particle = None
 
+        # Build controls and calculate dynamic Y spacing for the Reset button
         self._build_top_controls(on_back, on_reset, on_pause, on_step)
 
         if "Projectile" in self.scene_info["name"]:
-            current_y = 315
+            current_y = 365
         elif "Buoyancy" in self.scene_info["name"]:
-            current_y = 265
+            current_y = 315
         else:
-            current_y = 220
+            current_y = 265
 
         self.btn_reset_config = Button(
             self.sim_width + 30,
@@ -319,13 +321,28 @@ class SimulationUI:
             )
         )
 
-        # Re-add the toggle buttons!
         scene_name = self.scene_info["name"]
         toggle_x = self.sim_width + 30
         toggle_w = 240
         toggle_h = 40
         toggle_y = 165
 
+        # 1. Global Velocities Toggle (Applies to all scenes)
+        self.toggles["velocities"] = False
+        self.buttons.append(
+            Button(
+                toggle_x,
+                toggle_y,
+                toggle_w,
+                toggle_h,
+                "Velocities (V)",
+                callback=lambda: self.toggle("velocities"),
+                font_size=18,
+            )
+        )
+        toggle_y += 50
+
+        # 2. Scene-Specific Toggles
         if "Rope" in scene_name or "Circle" in scene_name:
             self.toggles["constraints"] = True
             self.buttons.append(
@@ -339,6 +356,7 @@ class SimulationUI:
                     font_size=18,
                 )
             )
+            toggle_y += 50
 
         if "Projectile" in scene_name:
             self.toggles["trajectory"] = True
@@ -377,6 +395,7 @@ class SimulationUI:
                     font_size=18,
                 )
             )
+            toggle_y += 125
 
         if "Buoyancy" in scene_name:
             self.toggles["water"] = True
@@ -403,6 +422,12 @@ class SimulationUI:
                     font_size=18,
                 )
             )
+            toggle_y += 100
+
+        self.final_toggle_y = (
+            toggle_y
+            + 50  # Save this so the Reset Config button anchors perfectly below
+        )
 
     def _build_global_ui(self):
         cfg = config_manager.get_scene_config(self.scene_name_key)
