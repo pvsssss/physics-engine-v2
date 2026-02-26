@@ -4,23 +4,57 @@ A custom-built, blazingly slow 2D physics engine and interactive sandbox created
 
 ## 📸 Gallery & Demos
 
-_(Add your project screenshots and GIF demonstrations here!)_
-
 ### Screenshots
+<details>
+<summary><b>Click to view Screenshots</b></summary>
+<br>
+<img src="https://github.com/pvsssss/physics-engine-v2/raw/master/assets/Home%20screen.jpeg" width="80%" alt="Scene Selection Menu">
 
-![Scene Selection Menu](link-to-scene-select-image.png)
-_The dynamic scene selection menu._
+_Home Screen_
+<br><br>
 
-![Interactive Controls](link-to-ui-image.png)
-_Live configuration panel and interactive velocity vector editing._
+<img src="https://github.com/pvsssss/physics-engine-v2/raw/master/assets/Scene%20Select%20Menu.jpeg" width="80%" alt="Interactive Controls">
+
+_Scene Selection Menu_
+<br><br>
+
+<img src="https://github.com/pvsssss/physics-engine-v2/raw/master/assets/config%20bar.jpeg" width="25%" alt="Physics Engine in Action">
+
+_Select a particle to change its properties_
+<br><br>
+</details>
 
 ### Video Showcases
 
 <details>
-<sunmmary>Click to expand
-</sunmmary>
-- **▶️ [Watch the Buoyancy Engine in Action](./assets/buoayancy%20scene.mp4)**
-- **▶️ [Dynamic Particle Manipulation](./assets/sidebar%20config.mp4)**
+<summary><b>Click to view Video Demonstrations</b></summary>
+<br>
+
+**1. Collision Lab**
+<video src="https://github.com/user-attachments/assets/a6405803-bdb7-4dc7-910e-37c3cd71019f" width="80%" controls="controls" muted="muted"></video>
+_Chaotic particle behavior constrained inside a circular boundary, highlighting the narrowphase collision detection and stacking stability._
+<br><br>
+
+**2. Constraint Chains & Ropes**
+<video src="https://github.com/user-attachments/assets/15f10302-ad4e-42d7-8d27-240ee3432944" width="80%" controls="controls" muted="muted"></video>
+_A chain of connected particles demonstrating position-based distance constraints solving iteratively to simulate a swinging rope._
+<br><br>
+
+**3. Projectile Motion Sandbox**
+<video src="https://github.com/user-attachments/assets/93380183-ea83-4b76-94e7-8df97605e470" width="80%" controls="controls" muted="muted"></video>
+_Ballistic trajectory simulation tracking a particle's arc while reacting to live adjustments in wind and gravity._
+<br><br>
+
+**4. Buoyancy Engine & Fluid Dynamics**
+<video src="https://github.com/user-attachments/assets/23fc03d6-5c5f-4585-a008-787536e30cf8" width="80%" controls="controls" muted="muted"></video>
+_A demonstration of Archimedes' principle in action, showcasing particles of varying densities floating and sinking in a fluid volume._
+<br><br>
+
+**5. Dynamic Particle Manipulation**
+<video src="https://github.com/user-attachments/assets/12bcc226-0b82-4b8b-8e86-f2d6f62082d2" width="100%" controls="controls" muted="muted"></video>
+_Showcasing the interactive UI, where the user drags particles and uses the slingshot vector tool to apply velocities in real-time._
+<br><br>
+
 </details>
 
 ---
