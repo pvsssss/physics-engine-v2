@@ -786,17 +786,26 @@ class SimulationUI:
         cfg = config_manager.get_scene_config(self.scene_name_key)
         cfg["wind_force"].x = float(val)
         if self.psystem:
+            found = False
             for f in self.psystem.global_forces:
                 if isinstance(f, WindForce):
                     f.force.x = float(val)
+                    found = True
+            # Dynamically add wind if it was originally zero!
+            if not found and float(val) != 0:
+                self.psystem.add_global_force(WindForce(cfg["wind_force"].copy()))
 
     def _on_wind_y(self, val):
         cfg = config_manager.get_scene_config(self.scene_name_key)
         cfg["wind_force"].y = float(val)
         if self.psystem:
+            found = False
             for f in self.psystem.global_forces:
                 if isinstance(f, WindForce):
                     f.force.y = float(val)
+                    found = True
+            if not found and float(val) != 0:
+                self.psystem.add_global_force(WindForce(cfg["wind_force"].copy()))
 
     def _on_air_drag(self, val):
         cfg = config_manager.get_scene_config(self.scene_name_key)
@@ -880,12 +889,23 @@ class SimulationUI:
         return self.toggles.get(name, False)
 
     def handle_event(self, event: pygame.event.Event) -> bool:
+        # Globally catch mouse clicks to instantly unfocus text inputs
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if TextInput.active_input and not TextInput.active_input.rect.collidepoint(
+                event.pos
+            ):
+                TextInput.active_input.active = False
+                if TextInput.active_input.callback:
+                    TextInput.active_input.callback(TextInput.active_input.get_value())
+                TextInput.active_input = None
+
+        handled = False
         for button in self.buttons:
             if button.handle_event(event):
-                return True
+                handled = True
         if self.scroll_area.handle_event(event):
-            return True
-        return False
+            handled = True
+        return handled
 
     def draw(self, screen: pygame.Surface):
         self.control_panel.draw(screen)

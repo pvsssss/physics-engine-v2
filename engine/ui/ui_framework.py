@@ -330,6 +330,9 @@ class Slider(Widget):
 class TextInput(Widget):
     """A text input field that properly handles its own rendering and bounds."""
 
+    # Class-level tracker for the globally active input
+    active_input = None
+
     def __init__(
         self,
         x: int,
@@ -371,13 +374,29 @@ class TextInput(Widget):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             was_active = self.active
             self.active = self.rect.collidepoint(event.pos)
-            if was_active and not self.active and self.callback:
-                self.callback(self.get_value())
+
+            if self.active:
+                if TextInput.active_input and TextInput.active_input != self:
+                    TextInput.active_input.active = False
+                    if TextInput.active_input.callback:
+                        TextInput.active_input.callback(
+                            TextInput.active_input.get_value()
+                        )
+                TextInput.active_input = self
+            else:
+                if was_active:
+                    if TextInput.active_input == self:
+                        TextInput.active_input = None
+                    if self.callback:
+                        self.callback(self.get_value())
+
             return self.active
 
         if event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_RETURN:
                 self.active = False
+                if TextInput.active_input == self:
+                    TextInput.active_input = None
                 if self.callback:
                     self.callback(self.get_value())
             elif event.key == pygame.K_BACKSPACE:
@@ -404,7 +423,6 @@ class TextInput(Widget):
         text_x = self.rect.x + 5
         text_y = self.rect.y + (self.rect.height - text_surface.get_height()) // 2
 
-        # Draw text using image cropping instead of screen clipping to prevent rendering bugs
         max_width = self.rect.width - 10
         if text_surface.get_width() > max_width:
             clip_rect = pygame.Rect(
@@ -639,7 +657,6 @@ class ScrollArea(Widget):
         for w in self.widgets:
             if w.handle_event(event):
                 handled = True
-                break
 
         # Must always shift back
         for w in self.widgets:

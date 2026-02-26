@@ -29,6 +29,6 @@ def build(system: ParticleSystem) -> None:
             restitution=cfg.get("restitution", 0.7),
             friction=cfg.get("friction", 0.1),
             damping=cfg.get("damping", 0.05),
-            sleep_threshold=1.0,
+            sleep_threshold=5.0,
         )
         system.add_particle(p)

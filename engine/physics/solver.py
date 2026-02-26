@@ -5,7 +5,7 @@ import math
 from engine.physics.contact import Contact
 
 # Velocity threshold for treating collision as resting (non-bouncy)
-RESTING_VELOCITY_THRESHOLD = 2.0
+RESTING_VELOCITY_THRESHOLD = 15.0
 
 # Small epsilon for floating-point comparisons
 EPSILON = 1e-8
@@ -14,7 +14,7 @@ MAX_CORRECTION_PER_ITERATION = 2
 PERCENT = 0.2
 # Thresholds for waking sleeping particles
 # Only wake if collision is significant enough to matter
-WAKE_THRESHOLD_VELOCITY = 2.0  # INCREASED: Less sensitive to micro-collisions
+WAKE_THRESHOLD_VELOCITY = 15.0  # INCREASED: Less sensitive to micro-collisions
 WAKE_THRESHOLD_PENETRATION = 0.3  # INCREASED: Tolerate more overlap before waking
 
 
@@ -108,9 +108,6 @@ def resolve_contact(contact: Contact) -> None:
 
     # Combined friction coefficient (geometric mean)
     mu = math.sqrt(a.friction * b.friction)
-
-    if abs(vel_along_normal) < 2.0:  # Very slow collision
-        return
 
     # applying coulomb friction
     # friction cannot exceed μ * normal_force

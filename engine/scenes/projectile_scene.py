@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from engine.math.vec import Vec2
 from engine.physics.particle import Particle
 from engine.physics.forces import Gravity, WindForce
 from engine.physics.containers.rectangle_container import RectangleContainer
 from engine.physics.particle_system import ParticleSystem
-from engine.scenes import projectile_config as config
+
+from engine.scenes import projectile_config as config_static
+from engine.core.config_manager import config_manager
 
 
 def build(system: ParticleSystem) -> None:
@@ -12,27 +15,32 @@ def build(system: ParticleSystem) -> None:
     system.clear_forces()
     system.containers.clear()
 
+    # 1. Get the dynamic config memory instead of static defaults
+    cfg = config_manager.get_scene_config("projectile_scene")
+
     container = RectangleContainer(
-        config.CONTAINER_X,
-        config.CONTAINER_Y,
-        config.CONTAINER_WIDTH,
-        config.CONTAINER_HEIGHT,
+        config_static.CONTAINER_X,
+        config_static.CONTAINER_Y,
+        config_static.CONTAINER_WIDTH,
+        config_static.CONTAINER_HEIGHT,
     )
     system.add_container(container)
 
-    system.add_global_force(Gravity(config.GRAVITY))
+    # 2. Apply forces using deep copies from the memory bank to prevent mutation
+    system.add_global_force(Gravity(cfg["gravity"].copy()))
 
-    if not config.WIND_FORCE.is_zero():
-        system.add_global_force(WindForce(config.WIND_FORCE))
+    if not cfg["wind_force"].is_zero():
+        system.add_global_force(WindForce(cfg["wind_force"].copy()))
 
+    # 3. Spawn particle using the dynamic memory
     projectile = Particle(
-        position=config.INITIAL_POSITION.copy(),
-        velocity=config.INITIAL_VELOCITY.copy(),
-        radius=config.PARTICLE_RADIUS,
-        mass=config.PARTICLE_MASS,
-        restitution=config.RESTITUTION if config.ENABLE_BOUNCE else 0.0,
-        friction=config.FRICTION,
-        damping=config.DAMPING,
-        sleep_threshold=0.0,
+        position=config_static.INITIAL_POSITION.copy(),
+        velocity=cfg["initial_velocity"].copy(),
+        radius=cfg["particle_radius"],
+        mass=cfg["particle_mass"],
+        restitution=cfg["restitution"] if config_static.ENABLE_BOUNCE else 0.0,
+        friction=cfg["friction"],
+        damping=cfg["damping"],
+        sleep_threshold=5.0,
     )
     system.add_particle(projectile)
