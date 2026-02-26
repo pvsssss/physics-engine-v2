@@ -6,21 +6,22 @@ A custom-built, blazingly slow 2D physics engine and interactive sandbox created
 
 _(Add your project screenshots and GIF demonstrations here!)_
 
-### Video Showcases
-
-- **▶️ [Watch the Buoyancy Engine in Action](link-to-video-or-gif-here)**
-- **▶️ [Interactive UI & Particle Manipulation](link-to-video-or-gif-here)**
-
 ### Screenshots
 
 ![Scene Selection Menu](link-to-scene-select-image.png)
 _The dynamic scene selection menu._
 
-![Buoyancy Simulation](link-to-buoyancy-image.png)
-_Real-time fluid dynamics with density-based coloring._
-
 ![Interactive Controls](link-to-ui-image.png)
 _Live configuration panel and interactive velocity vector editing._
+
+### Video Showcases
+
+<details>
+<sunmmary>
+- **▶️ [Watch the Buoyancy Engine in Action](./assets/buoayancy%20scene.mp4)**
+- **▶️ [Dynamic Particle Manipulation](./assets/sidebar%20config.mp4)**
+</sunmmary>
+</details>
 
 ---
 
