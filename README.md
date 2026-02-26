@@ -82,7 +82,7 @@ When the simulation is paused, the user can reach directly into the engine:
 
 - **Drag & Drop:** Click and hold any particle to translate its position in world space.
 - **Velocity Slingshot:** Grab the visual velocity vector arrowhead of any particle and drag it to dynamically calculate and apply new directional forces.
-
+## 📁 Project Structure
 ```text
 python-physics-engine/
 ├── main.py          # Main application entry point and game loop
