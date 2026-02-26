@@ -17,10 +17,10 @@ _Live configuration panel and interactive velocity vector editing._
 ### Video Showcases
 
 <details>
-<sunmmary>
+<sunmmary>Click to expand
+</sunmmary>
 - **▶️ [Watch the Buoyancy Engine in Action](./assets/buoayancy%20scene.mp4)**
 - **▶️ [Dynamic Particle Manipulation](./assets/sidebar%20config.mp4)**
-</sunmmary>
 </details>
 
 ---
