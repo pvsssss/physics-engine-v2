@@ -1,4 +1,4 @@
-# ⚛️ Python 2D Physics Engine & Interactive Sandbox
+# 2D Physics Engine
 
 A custom-built, blazingly slow 2D physics engine and interactive sandbox created entirely from scratch in Python. This project implements its own mathematical foundation, physics solvers, collision detection pipelines, and a fully custom graphical user interface, relying on `pygame` strictly for drawing to the screen and capturing hardware events.
 
